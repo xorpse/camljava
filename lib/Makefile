@@ -11,19 +11,19 @@ byte: jni.cma camljava.jar
 
 install:
 	mkdir -p $(CAMLJAVALIB)
-	cp jni.cma jni.cmi $(wildcard jni.cmxa jni.a) libcamljni.a jni.mli camljava.jar $(CAMLJAVALIB)
+	cp jni.cma jni.cmi $(wildcard jni.cmxa jni.a) libcamljni.so jni.mli camljava.jar $(CAMLJAVALIB)
 
-jni.cma: jni.cmo libcamljni.a
+jni.cma: jni.cmo dllcamljni.so
 	$(OCAMLC) -linkall -a -o jni.cma -custom jni.cmo \
-            -ccopt "$(JNILIBOPTS)" -cclib -lcamljni -cclib "$(JNILIBS)"
+            -ccopt "$(JNILIBOPTS)" -cclib -lcamljni -dllib -lcamljni -cclib $(JNILIBS)
 
-jni.cmxa: jni.cmx libcamljni.a
+jni.cmxa: jni.cmx dllcamljni.so
 	$(OCAMLOPT) -linkall -a -o jni.cmxa jni.cmx \
             -ccopt "$(JNILIBOPTS)" -cclib -lcamljni -cclib "$(JNILIBS)"
 
-libcamljni.a: jnistubs.o
-	rm -f libcamljni.a
-	ar rcs libcamljni.a jnistubs.o
+dllcamljni.so: jnistubs.o
+	rm -f libcamljni.so
+	$(CC) -shared -o dllcamljni.so jnistubs.o $(JNILIBOPTS) -ljvm
 
 clean::
 	rm -f libcamljni.a

@@ -1,0 +1,5 @@
+version = "v0.4"
+description = "camljava"
+archive(byte) = "jni.cma"
+archive(native) = "jni.cmxa"
+plugin(byte) = "jni.cma"
