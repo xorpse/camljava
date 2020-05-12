@@ -3,7 +3,7 @@ include ../Makefile.config
 OCAMLC=ocamlc -g
 OCAMLOPT=ocamlopt
 OCAMLDEP=ocamldep
-OCAMLLIB=`ocamlc -where`
+OCAMLLIB=`ocamlfind printconf path`
 CAMLJAVALIB=$(OCAMLLIB)/camljava
 
 all: jni.cma jni.cmxa camljava.jar
