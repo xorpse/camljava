@@ -62,6 +62,35 @@ module Project = struct
 
 end
 
+module TaskMonitor = struct
+  let clazz = Jni.find_class "ghidra/util/task/TaskMonitor"
+  let dummy_id = Jni.get_static_fieldID clazz "DUMMY" "Lghidra/util/task/TaskMonitor;"
+
+  let dummy = Jni.get_static_object_field clazz dummy_id
+end
+
+module ProgramUtils = struct
+  let clazz = Jni.find_class "ghidra/program/util/GhidraProgramUtilities"
+  let set_analyzed_flag_id = Jni.get_static_methodID clazz "setAnalyzedFlag" "(Lghidra/program/model/listing/Program;Z)V"
+
+  let set_analyzed_flag prog =
+    Jni.call_static_void_method clazz set_analyzed_flag_id [|Jni.Obj prog; Jni.Boolean true|]
+end
+
+module AutoAnalysis = struct
+  let clazz = Jni.find_class "ghidra/app/plugin/core/analysis/AutoAnalysisManager"
+  let get_analysis_manager_id = Jni.get_static_methodID clazz "getAnalysisManager" "(Lghidra/program/model/listing/Program;)Lghidra/app/plugin/core/analysis/AutoAnalysisManager;"
+  let reanalyze_all_id = Jni.get_methodID clazz "reAnalyzeAll" "(Lghidra/program/model/address/AddressSetView;)V"
+  let start_analysis_id = Jni.get_methodID clazz "startAnalysis" "(Lghidra/util/task/TaskMonitor;)V"
+
+  let analysis_manager prog =
+    Jni.call_static_object_method clazz get_analysis_manager_id [|Jni.Obj prog|]
+  let reanalyze_all mgr =
+    Jni.call_void_method mgr reanalyze_all_id [|Jni.Obj Jni.null|]
+  let start_analysis mgr =
+    Jni.call_void_method mgr start_analysis_id [|Jni.Obj TaskMonitor.dummy|]
+end
+
 let () =
   let config = HeadlessConfig.create () in
   let layout = ApplicationLayout.create () in
@@ -70,5 +99,9 @@ let () =
   let project_name = Jni.string_to_java "test" in
   let program_name = Jni.string_to_java "/usr/bin/true" in
   let proj = Project.create project_dir project_name in
-  let _ = Project.import proj program_name in
+  let prog = Project.import proj program_name in
+  let amgr = AutoAnalysis.analysis_manager prog in
+  AutoAnalysis.reanalyze_all amgr;
+  AutoAnalysis.start_analysis amgr;
+  ProgramUtils.set_analyzed_flag prog;
   print_endline "DONE!"
