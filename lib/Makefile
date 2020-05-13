@@ -4,6 +4,7 @@ OCAMLC=ocamlc -g
 OCAMLOPT=ocamlopt
 OCAMLDEP=ocamldep
 OCAMLLIB=`ocamlfind printconf path`
+OCAMLINC=`ocamlfind printconf path`/ocaml
 CAMLJAVALIB=$(OCAMLLIB)/camljava
 
 all: jni.cma jni.cmxa camljava.jar
@@ -57,7 +58,7 @@ clean::
 .SUFFIXES: .ml .mli .cmo .cmi .cmx
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(JNIINCLUDES) -I$(OCAMLLIB) $*.c
+	$(CC) -c $(CFLAGS) $(JNIINCLUDES) -I$(OCAMLINC) $*.c
 
 .ml.cmo:
 	$(OCAMLC) -c $*.ml
